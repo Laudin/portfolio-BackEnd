@@ -11,13 +11,13 @@ import lombok.Setter;
 @Getter 
 @Setter
 @Entity
-public class User {
+public class Tecnologia {
    
    @Id
    @GeneratedValue(strategy = GenerationType.SEQUENCE)
    private Long id;
-   private String email;
-   private String password;
+   private String nombre;
+   private Long nivel;
 
    public Long getId() {
       return id;
@@ -25,16 +25,16 @@ public class User {
    public void setId(Long id) {
       this.id = id;
    }
-   public String getEmail() {
-      return email;
+   public String getNombre() {
+      return nombre;
    }
-   public void setEmail(String email) {
-      this.email = email;
+   public void setNombre(String nombre) {
+      this.nombre = nombre;
    }
-   public String getPassword() {
-      return password;
+   public Long getNivel() {
+      return nivel;
    }
-   public void setPassword(String password) {
-      this.password = password;
+   public void setNivel(Long nivel) {
+      this.nivel = nivel;
    }
 }
