@@ -1,6 +1,8 @@
 package com.portfolio.app.controller;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.http.HttpHeaders;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,13 +13,17 @@ import com.portfolio.app.models.*;
 import com.portfolio.app.service.IAppService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -269,20 +275,30 @@ public class AppController {
       return null;
    }
 
-   @PostMapping("/file")
-   public String uploadFile(@RequestParam("file") MultipartFile file) {
-      try (InputStream inputStream = file.getInputStream()){
-         
-         Path path = Paths.get("src/main/resources/static/" + file.getOriginalFilename());
-         
-         Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
-
-         return "Imagen guardada con éxito";
-      } catch (Exception e) {
-         System.out.println(e);   
-
+   @PostMapping("/static/image")
+   @ResponseBody
+   // data recived is form-data and has a multipart
+   public ResponseEntity<String> post(@RequestHeader HttpHeaders request, @RequestParam("image") MultipartFile multipartFile) throws IOException {
+      // path where it will be stores. Needs to pass throw this funct to convert it to Path format: C:\somethins\..
+      Path uploadPath = Paths.get("src/main/resources/static/");      
+      // if is not png or jpeg return Incorrect
+      if (!(multipartFile.getContentType().equals("image/png") || multipartFile.getContentType().equals("image/jpeg"))) {
+         return new ResponseEntity<>("Incorrect file extension", HttpStatus.NOT_ACCEPTABLE);
       }
-      return null;
+      // loads the image
+      try (InputStream inputStream = multipartFile.getInputStream()) {
+         // where it will be stored + the name (resolve adds that to the uploadPath)
+         Path filePath;
+         if (multipartFile.getContentType().equals("image/png")) {
+            filePath = uploadPath.resolve("Image.png");
+            } else {
+            filePath = uploadPath.resolve("Image.jpg");
+         }
+         // copies the file into the path and replaces it
+         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+      } catch (IOException ioe) {
+         return new ResponseEntity<>("Could not save image file", HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      return new ResponseEntity<>("Image saved succefully", HttpStatus.OK);
    }
-
 }
