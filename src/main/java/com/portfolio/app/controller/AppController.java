@@ -2,7 +2,6 @@ package com.portfolio.app.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.http.HttpHeaders;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,8 +20,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -275,10 +274,26 @@ public class AppController {
       return null;
    }
 
+   @PostMapping("/file")
+   public String uploadFile(@RequestParam("file") MultipartFile file) {
+      try (InputStream inputStream = file.getInputStream()){
+         
+         Path path = Paths.get("src/main/resources/static/" + file.getOriginalFilename());
+         
+         Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
+
+         return "Imagen guardada con éxito";
+      } catch (Exception e) {
+         System.out.println(e);   
+
+      }
+      return null;
+   }
+
    @PostMapping("/static/image")
    @ResponseBody
    // data recived is form-data and has a multipart
-   public ResponseEntity<String> post(@RequestHeader HttpHeaders request, @RequestParam("image") MultipartFile multipartFile) throws IOException {
+   public ResponseEntity<String> post(@RequestPart("image") MultipartFile multipartFile) throws IOException {
       // path where it will be stores. Needs to pass throw this funct to convert it to Path format: C:\somethins\..
       Path uploadPath = Paths.get("src/main/resources/static/");      
       // if is not png or jpeg return Incorrect
@@ -301,4 +316,5 @@ public class AppController {
       }
       return new ResponseEntity<>("Image saved succefully", HttpStatus.OK);
    }
+
 }
