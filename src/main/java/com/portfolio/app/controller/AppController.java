@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 import com.portfolio.app.models.*;
 import com.portfolio.app.service.IAppService;
@@ -169,6 +170,8 @@ public class AppController {
          personaObj.setLinkedin(persona.getLinkedin());
          personaObj.setNombre(persona.getNombre());
          personaObj.setTitulo(persona.getTitulo());
+         personaObj.setBanner(persona.getBanner());
+         personaObj.setProfile(persona.getProfile());
 
          service.savePersona(personaObj);
          return personaObj;
@@ -278,16 +281,19 @@ public class AppController {
    public String uploadFile(@RequestParam("file") MultipartFile file) {
       try (InputStream inputStream = file.getInputStream()){
          
+         UUID uuid = UUID.randomUUID();
+
          Path path = Paths.get("src/main/resources/static/" + file.getOriginalFilename());
          
          Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
 
          return "Imagen guardada con éxito";
+
       } catch (Exception e) {
          System.out.println(e);   
-
+         
+         return "Imagen no guardad";
       }
-      return null;
    }
 
    @PostMapping("/static/image")
